@@ -10,13 +10,15 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
   public function register(Request $request) {
+    // Validasi input dari frontend
     $request->validate([
       'name' => 'required|string|max:255',
-      'email' => 'required|email|unique:users',
-      'password' => 'required|min:8|confirmed',
-      'role' => 'required|in:seeker,employer',
+      'email' => 'required|email|unique:users', // email tidak boleh duplikat
+      'password' => 'required|min:8|confirmed', // confirmed = harus ada password_confirmation
+      'role' => 'required|in:seeker,employer', // hanya 2 pilihan role
     ]);
 
+    // Simpan user baru, password di-hash agar tidak tersimpan plain text
     $user = User::create([
       'name' => $request->name,
       'email' => $request->email,
@@ -24,13 +26,14 @@ class AuthController extends Controller
       'role' => $request->role,
     ]);
 
+    // Buat token Sanctum untuk user yang baru register
     $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
       'message' => 'Register berhasil',
       'user' => $user,
       'token' => $token,
-    ], 201);
+    ], 201); // 201 = Created
   }
 
   public function login(Request $request) {
@@ -39,9 +42,10 @@ class AuthController extends Controller
       'password' => 'required',
     ]);
 
+    // Cari user berdasarkan email
     $user = User::where('email', $request->input('email'))->first();
 
-    if (!$user || Hash::check($request->input('password'), $user->password)) {
+    if (!$user || !Hash::check($request->input('password'), $user->password)) {
       throw ValidationException::withMessages([
         'email' => ['Email atau password salah.'],
       ]);
@@ -57,13 +61,15 @@ class AuthController extends Controller
   }
 
   public function logout(Request $request) {
-    $request->user()->currentAccesToken()->delete();
-    return response->json([
+    $request->user()->currentAccessToken()->delete(); // hapus token yang sedang dipakai
+
+    return response()->json([
       'message' => 'Logout berhasil',
     ]);
   }
 
   public function me(Request $request) {
+    // Kembalikan data user yang sedang login berdasarkan token
     return response()->json($request->user());
   }
 }

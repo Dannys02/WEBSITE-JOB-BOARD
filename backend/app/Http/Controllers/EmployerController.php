@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployerController extends Controller
 {
+  // Ambil semua job milik employer yang sedang login
+  // whereHas = filter job yang company-nya punya user_id sama dengan yang login
   public function index() {
     $jobs = Job::with('category')
     ->whereHas('company', function ($q) {
@@ -18,6 +20,9 @@ class EmployerController extends Controller
     return response()->json($jobs);
   }
 
+  // Buat lowongan baru
+  // Auth::user()->company = ambil relasi company dari user yang login
+  // Kalau employer belum punya company, tolak dengan 403 Forbidden
   public function store(Request $request) {
     $request->validate([
       'category_id' => 'required|exists:categories,id',
@@ -56,6 +61,9 @@ class EmployerController extends Controller
     ], 201);
   }
 
+  // Update lowongan — hanya job milik employer sendiri yang bisa diedit
+  // 'sometimes' = field boleh tidak dikirim, tapi kalau dikirim harus valid
+  // $request->all() = ambil semua input dan langsung update
   public function update(Request $request, $id) {
     $job = Job::whereHas('company', function ($q) {
       $q->where('user_id', Auth::id());
@@ -81,6 +89,7 @@ class EmployerController extends Controller
     ]);
   }
 
+  // Hapus lowongan — hanya job milik employer sendiri
   public function destroy($id) {
     $job = Job::whereHas('company', function ($q) {
       $q->where('user_id', Auth::id());
@@ -93,6 +102,8 @@ class EmployerController extends Controller
     ]);
   }
 
+  // Ambil semua pelamar untuk satu job milik employer
+  // with('user') = eager load data user si pelamar sekaligus
   public function applicants($id) {
     $job = Job::whereHas('company', function ($q) {
       $q->where('user_id', Auth::id());
@@ -106,6 +117,9 @@ class EmployerController extends Controller
     return response()->json($applicants);
   }
 
+  // Update status lamaran (pending → reviewed → accepted/rejected)
+  // whereHas('job.company') = pastikan lamaran ini milik job yang punya employer ini
+  // Ini penting untuk keamanan, employer tidak bisa ubah status lamaran orang lain
   public function updateStatus(Request $request, $id) {
     $application = Application::whereHas('job.company', function ($q) {
       $q->where('user_id', Auth::id());

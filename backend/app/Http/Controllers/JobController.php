@@ -7,31 +7,40 @@ use App\Models\Job;
 
 class JobController extends Controller
 {
-    public function index(Request $request) {
-        $query = Job::where(['company', 'category'])->where('status', 'active');
+  // Ambil semua job aktif, dengan filter opsional dari query string
+  // Contoh: /api/jobs?search=developer&category_id=1&type=full-time
+  public function index(Request $request) {
+    $query = Job::with(['company', 'category'])->where('status', 'active');
 
-        if ($request->search) {
-            $query->where('title', 'like', '%' . $request->search .'%');
-        }
-
-        if ($request->category_id) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->type) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->location) {
-            $query->where('location', 'like', '%', '%' . $request->location . '%');
-        }
-
-        return response()->json($query->latest()->paginate(10));
+    // Filter by keyword di kolom title
+    if ($request->search) {
+      $query->where('title', 'like', '%' . $request->search . '%');
     }
 
-    public function show($id) {
-        $job = Job::where(['company', 'category'])->findOrFail($id);
-
-        return response()->json($job);
+    // Filter by kategori
+    if ($request->category_id) {
+      $query->where('category_id', $request->category_id);
     }
+
+    // Filter by tipe kerja (full-time, part-time, dll)
+    if ($request->type) {
+      $query->where('type', $request->type);
+    }
+
+    // Filter by lokasi
+    if ($request->location) {
+      // Seharusnya hanya 3 parameter: kolom, operator, nilai
+      $query->where('location', 'like', '%' . $request->location . '%');
+    }
+
+    // Urutkan terbaru, batasi 10 per halaman
+    return response()->json($query->latest()->paginate(10));
+  }
+
+  // Ambil detail satu job by id
+  public function show($id) {
+    $job = Job::with(['company', 'category'])->findOrFail($id);
+
+    return response()->json($job);
+  }
 }

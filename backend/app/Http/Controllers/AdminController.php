@@ -13,10 +13,10 @@ class AdminController extends Controller
     public function stats()
     {
         return response()->json([
-            'total_users'        => User::count(),
-            'total_jobs'         => Job::count(),
+            'total_users' => User::count(),
+            'total_jobs' => Job::count(),
             'total_applications' => Application::count(),
-            'active_jobs'        => Job::where('status', 'active')->count(),
+            'active_jobs' => Job::where('status', 'active')->count(),
         ]);
     }
 
@@ -41,7 +41,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => 'Status user berhasil diupdate',
-            'user'    => $user,
+            'user' => $user,
         ]);
     }
 
@@ -68,7 +68,7 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => 'Status lowongan berhasil diupdate',
-            'job'     => $job,
+            'job' => $job,
         ]);
     }
 
