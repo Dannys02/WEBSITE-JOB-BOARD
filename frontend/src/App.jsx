@@ -5,9 +5,8 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Home from './pages/Home';
 import JobDetail from './pages/JobDetail';
+import SeekerDashboard from './pages/seeker/Dashboard';
 
-// Placeholder pages — kita isi nanti satu per satu
-const SeekerDashboard = () => <div>Seeker Dashboard</div>;
 const EmployerDashboard = () => <div>Employer Dashboard</div>;
 const AdminDashboard = () => <div>Admin Dashboard</div>;
 
